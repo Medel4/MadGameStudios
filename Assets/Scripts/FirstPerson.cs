@@ -8,7 +8,10 @@ public class FirstPerson: MonoBehaviour
     [SerializeField] private float velocidadMovimiento;
     private CharacterController cc;
     private Camera cam;
+
+    public float range = 5f; // Rango de detección
     
+
     // Start is called before the first frame update
     void Start()
     {
@@ -23,6 +26,8 @@ public class FirstPerson: MonoBehaviour
     void Update()
     {
 
+        CogerObjetos();
+
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
         Vector2 input = new Vector2(h, v).normalized;
@@ -35,5 +40,28 @@ public class FirstPerson: MonoBehaviour
 
             cc.Move(movimiento * velocidadMovimiento * Time.deltaTime);
         }
+
+
+    }
+
+
+    void CogerObjetos()
+    {
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            RaycastHit hit;
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+
+            if (Physics.Raycast(ray, out hit, range))
+            {
+                // Verificamos si el objeto que colisiona tiene el tag "Destructible"
+                if (hit.collider.CompareTag("Destructible"))
+                {
+                    Destroy(hit.collider.gameObject); // Destruye el objeto
+                }
+            }
+        }
+
     }
 }
