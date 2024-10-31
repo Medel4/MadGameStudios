@@ -1,28 +1,12 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class adadad : MonoBehaviour
+public class CogeryPoner : MonoBehaviour
 {
     [SerializeField] private float velocidadMovimiento;
     private CharacterController cc;
     private Camera cam;
 
-    public float range = 5f; // Rango de detección
-
-
-    [Header("Configuración para Colocación de Objetos")]
-    public GameObject objetoOriginal;
-    public GameObject objetoFinal;
-    public float distanciaMaxima = 5f;
-    public LayerMask layerInteractuable;
-
-    [Header("Materiales de Previsualización")]
-    public Material materialValido;
-    public Material materialInvalido;
-
-    private GameObject objetoPreview;
-    private bool previsualizando = false;
+    public float range = 5f;
 
     [Header("Configuración Gravedad")]
     [SerializeField] private Vector3 MovimientoVertical;
@@ -32,25 +16,27 @@ public class adadad : MonoBehaviour
     [SerializeField] private float radioDeteccion = 0.3f;
     [SerializeField] private LayerMask queEsSuelo;
 
+    [Header("Configuración para Colocación de Objetos")]
+    [SerializeField] private float distanciaMaxima = 5f;
+    [SerializeField] private LayerMask layerInteractuable;
 
+    [Header("Materiales de Previsualización")]
+    [SerializeField] private Material materialValido;
+    [SerializeField] private Material materialInvalido;
 
+    private GameObject objetoRecogido; // Objeto que el jugador ha recogido
+    private GameObject objetoPreview;
+    private bool previsualizando = false;
 
-
-
-    // Start is called before the first frame update
     void Start()
     {
-
         Cursor.lockState = CursorLockMode.Locked;
         cc = GetComponent<CharacterController>();
         cam = Camera.main;
-
     }
 
-    // Update is called once per frame
     void Update()
     {
-
         CogerObjetos();
 
         float h = Input.GetAxisRaw("Horizontal");
@@ -61,26 +47,36 @@ public class adadad : MonoBehaviour
         if (input.sqrMagnitude > 0)
         {
             float anguloRotacion = Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg + cam.transform.eulerAngles.y;
+            transform.eulerAngles = new Vector3(0, anguloRotacion, 0);
             Vector3 movimiento = Quaternion.Euler(0, anguloRotacion, 0) * Vector3.forward;
-
             cc.Move(movimiento * velocidadMovimiento * Time.deltaTime);
         }
 
-        if (Input.GetKeyDown(KeyCode.P)) // Activa o desactiva la previsualización con la tecla 'P'
+        AplicarGravedad();
+        DeteccionSuelo();
+
+        if (Input.GetKeyDown(KeyCode.P) && objetoRecogido != null)
         {
             previsualizando = !previsualizando;
-            objetoPreview.SetActive(previsualizando);
+
+            if (previsualizando)
+            {
+                IniciarPrevisualizacion();
+            }
+            else
+            {
+                FinalizarPrevisualizacion();
+            }
         }
 
         if (previsualizando)
         {
             ColocarObjetos();
         }
-
     }
+
     private void AplicarGravedad()
     {
-        //mi movimiento vertical en la Y va aumentando a cierta escala por segundo
         MovimientoVertical.y += escalaGravedad * Time.deltaTime;
         cc.Move(MovimientoVertical * Time.deltaTime);
     }
@@ -88,7 +84,6 @@ public class adadad : MonoBehaviour
     private void DeteccionSuelo()
     {
         Collider[] collsDetectados = Physics.OverlapSphere(Pies.position, radioDeteccion, queEsSuelo);
-        //Si existe un collider bajo mis pies
         if (collsDetectados.Length > 0)
         {
             MovimientoVertical.y = 0;
@@ -96,7 +91,6 @@ public class adadad : MonoBehaviour
         }
     }
 
-    //sirve para dibujar figuras en la escena
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.cyan;
@@ -113,7 +107,6 @@ public class adadad : MonoBehaviour
 
     void CogerObjetos()
     {
-
         if (Input.GetKeyDown(KeyCode.E))
         {
             RaycastHit hit;
@@ -121,21 +114,24 @@ public class adadad : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit, range))
             {
-                // Verificamos si el objeto que colisiona tiene el tag "Destructible"
                 if (hit.collider.CompareTag("Destructible"))
                 {
-                    Destroy(hit.collider.gameObject); // Destruye el objeto
+                    objetoRecogido = hit.collider.gameObject;
+                    objetoRecogido.SetActive(false); // Ocultar el objeto en la escena
                 }
             }
         }
-
     }
+
     void IniciarPrevisualizacion()
     {
-        objetoPreview = Instantiate(objetoOriginal);
-        objetoPreview.SetActive(true);
+        if (objetoRecogido != null)
+        {
+            objetoPreview = Instantiate(objetoRecogido);
+            objetoPreview.SetActive(true);
 
-        CambiarMaterialPreview(materialInvalido);
+            CambiarMaterialPreview(materialInvalido);
+        }
     }
 
     void FinalizarPrevisualizacion()
@@ -143,16 +139,17 @@ public class adadad : MonoBehaviour
         if (objetoPreview != null)
         {
             Destroy(objetoPreview);
+            objetoPreview = null; // Aseguramos que se resetee
         }
     }
 
     void ColocarObjetos()
     {
         RaycastHit hit;
-        if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, distanciaMaxima, layerInteractuable))
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out hit, distanciaMaxima, layerInteractuable))
         {
-            Vector3 center = objetoPreview.GetComponent<Collider>().bounds.center;
-            hit.point = new Vector3(hit.point.x, center.y, hit.point.z);
             objetoPreview.transform.position = hit.point;
             objetoPreview.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
 
@@ -162,7 +159,11 @@ public class adadad : MonoBehaviour
 
                 if (Input.GetMouseButtonDown(0))
                 {
-                    Instantiate(objetoFinal, hit.point, objetoPreview.transform.rotation);
+                    GameObject nuevoObjeto = Instantiate(objetoRecogido, objetoPreview.transform.position, objetoPreview.transform.rotation);
+                    nuevoObjeto.SetActive(true); // Activamos el objeto instanciado
+                    objetoRecogido = null; // Limpiamos el objeto recogido
+                    FinalizarPrevisualizacion(); // Finalizamos la previsualización después de colocar
+                    previsualizando = false; // Aseguramos que la previsualización se detiene
                 }
             }
             else
@@ -170,11 +171,15 @@ public class adadad : MonoBehaviour
                 CambiarMaterialPreview(materialInvalido);
             }
         }
+        else
+        {
+            CambiarMaterialPreview(materialInvalido);
+        }
     }
 
     bool LugarEsValido(RaycastHit hit)
     {
-        return hit.collider != null && hit.collider.tag != "Obstaculo";
+        return hit.collider != null && ((1 << hit.collider.gameObject.layer) & layerInteractuable) != 0;
     }
 
     void CambiarMaterialPreview(Material material)
@@ -191,9 +196,3 @@ public class adadad : MonoBehaviour
         FinalizarPrevisualizacion();
     }
 }
-
-
-
-
-
-
