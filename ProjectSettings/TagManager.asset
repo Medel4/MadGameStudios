@@ -5,11 +5,12 @@ TagManager:
   serializedVersion: 2
   tags:
   - Destructible
+  - Interactuables
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - layerInteraccion
   - Water
   - UI
   - 
