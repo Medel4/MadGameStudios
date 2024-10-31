@@ -2,13 +2,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FirstPerson : MonoBehaviour
+public class adadad : MonoBehaviour
 {
     [SerializeField] private float velocidadMovimiento;
     private CharacterController cc;
     private Camera cam;
 
     public float range = 5f; // Rango de detección
+
+
+    [Header("Configuración para Colocación de Objetos")]
+    public GameObject objetoOriginal;
+    public GameObject objetoFinal;
+    public float distanciaMaxima = 5f;
+    public LayerMask layerInteractuable;
+
+    [Header("Materiales de Previsualización")]
+    public Material materialValido;
+    public Material materialInvalido;
+
+    private GameObject objetoPreview;
+    private bool previsualizando = false;
 
     [Header("Configuración Gravedad")]
     [SerializeField] private Vector3 MovimientoVertical;
@@ -18,31 +32,25 @@ public class FirstPerson : MonoBehaviour
     [SerializeField] private float radioDeteccion = 0.3f;
     [SerializeField] private LayerMask queEsSuelo;
 
-    [Header("Configuración para Colocación de Objetos")]
-    [SerializeField] private GameObject objetoOriginal;
-    [SerializeField] private GameObject objetoFinal;
-    [SerializeField] private float distanciaMaxima = 5f;
-    [SerializeField] private LayerMask layerInteractuable;
-
-    [Header("Materiales de Previsualización")]
-    [SerializeField] private Material materialValido;
-    [SerializeField] private Material materialInvalido;
 
 
-    private GameObject objetoPreview;
-    private bool previsualizando = false;
+
+
 
     // Start is called before the first frame update
     void Start()
     {
+
         Cursor.lockState = CursorLockMode.Locked;
         cc = GetComponent<CharacterController>();
         cam = Camera.main;
+
     }
 
     // Update is called once per frame
     void Update()
     {
+
         CogerObjetos();
 
         float h = Input.GetAxisRaw("Horizontal");
@@ -53,38 +61,22 @@ public class FirstPerson : MonoBehaviour
         if (input.sqrMagnitude > 0)
         {
             float anguloRotacion = Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg + cam.transform.eulerAngles.y;
-            transform.eulerAngles = new Vector3(0, anguloRotacion, 0);
             Vector3 movimiento = Quaternion.Euler(0, anguloRotacion, 0) * Vector3.forward;
+
             cc.Move(movimiento * velocidadMovimiento * Time.deltaTime);
-            
         }
-        
 
-        AplicarGravedad();
-        DeteccionSuelo();
-
-        
-
-        
-        if (Input.GetKeyDown(KeyCode.P))
+        if (Input.GetKeyDown(KeyCode.P)) // Activa o desactiva la previsualización con la tecla 'P'
         {
             previsualizando = !previsualizando;
-
-            if (previsualizando)
-            {
-                IniciarPrevisualizacion();
-            }
-            else
-            {
-                FinalizarPrevisualizacion();
-            }
+            objetoPreview.SetActive(previsualizando);
         }
 
-       
         if (previsualizando)
         {
             ColocarObjetos();
         }
+
     }
     private void AplicarGravedad()
     {
@@ -118,8 +110,10 @@ public class FirstPerson : MonoBehaviour
             MovimientoVertical.y = Mathf.Sqrt(-2 * escalaGravedad * alturaSalto);
         }
     }
+
     void CogerObjetos()
     {
+
         if (Input.GetKeyDown(KeyCode.E))
         {
             RaycastHit hit;
@@ -127,14 +121,15 @@ public class FirstPerson : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit, range))
             {
+                // Verificamos si el objeto que colisiona tiene el tag "Destructible"
                 if (hit.collider.CompareTag("Destructible"))
                 {
-                    Destroy(hit.collider.gameObject);
+                    Destroy(hit.collider.gameObject); // Destruye el objeto
                 }
             }
         }
-    }
 
+    }
     void IniciarPrevisualizacion()
     {
         objetoPreview = Instantiate(objetoOriginal);
@@ -150,30 +145,24 @@ public class FirstPerson : MonoBehaviour
             Destroy(objetoPreview);
         }
     }
+
     void ColocarObjetos()
     {
         RaycastHit hit;
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out hit, distanciaMaxima, layerInteractuable))
+        if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, distanciaMaxima, layerInteractuable))
         {
-            // Obtener la extensión en y del collider del objeto de previsualización
-            float alturaCentroObjeto = objetoPreview.GetComponent<Collider>().bounds.extents.y;
-
-            // Ajustar la posición en y para que el objeto esté justo sobre la superficie
-            Vector3 posicion = hit.point;
-            posicion.y = hit.point.y + alturaCentroObjeto;
-
-            objetoPreview.transform.position = posicion;
+            Vector3 center = objetoPreview.GetComponent<Collider>().bounds.center;
+            hit.point = new Vector3(hit.point.x, center.y, hit.point.z);
+            objetoPreview.transform.position = hit.point;
             objetoPreview.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
 
-            if (LugarEsValido())
+            if (LugarEsValido(hit))
             {
                 CambiarMaterialPreview(materialValido);
 
                 if (Input.GetMouseButtonDown(0))
                 {
-                    Instantiate(objetoFinal, objetoPreview.transform.position, objetoPreview.transform.rotation);
+                    Instantiate(objetoFinal, hit.point, objetoPreview.transform.rotation);
                 }
             }
             else
@@ -181,16 +170,11 @@ public class FirstPerson : MonoBehaviour
                 CambiarMaterialPreview(materialInvalido);
             }
         }
-        else
-        {
-            CambiarMaterialPreview(materialInvalido);
-        }
     }
 
-    bool LugarEsValido()
+    bool LugarEsValido(RaycastHit hit)
     {
-        Collider[] colliders = Physics.OverlapBox(objetoPreview.transform.position, objetoPreview.GetComponent<Collider>().bounds.extents, objetoPreview.transform.rotation, layerInteractuable);
-        return colliders.Length == 0;
+        return hit.collider != null && hit.collider.tag != "Obstaculo";
     }
 
     void CambiarMaterialPreview(Material material)
@@ -206,5 +190,10 @@ public class FirstPerson : MonoBehaviour
     {
         FinalizarPrevisualizacion();
     }
-
 }
+
+
+
+
+
+
