@@ -10,7 +10,7 @@ public class CogeryPoner : MonoBehaviour
 
     [Header("Configuración Gravedad")]
     [SerializeField] private Vector3 MovimientoVertical;
-    [SerializeField] private float escalaGravedad = -9.81f;
+    [SerializeField] private float escalaGravedad;
     [SerializeField] private float alturaSalto = 3f;
     [SerializeField] private Transform Pies;
     [SerializeField] private float radioDeteccion = 0.3f;
@@ -27,6 +27,8 @@ public class CogeryPoner : MonoBehaviour
     private GameObject objetoRecogido; // Objeto que el jugador ha recogido
     private GameObject objetoPreview;
     private bool previsualizando = false;
+
+    public float EscalaGravedad { get => escalaGravedad; set => escalaGravedad = value; }
 
     void Start()
     {
