@@ -834,7 +834,7 @@ PrefabInstance:
     - target: {fileID: 1507636620937791777, guid: 7097ba7ba649e1f41bba232312bdcbd8,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 50
+      value: 49.66
       objectReference: {fileID: 0}
     - target: {fileID: 1507636620937791777, guid: 7097ba7ba649e1f41bba232312bdcbd8,
         type: 3}
@@ -1843,11 +1843,6 @@ MonoBehaviour:
     m_Bits: 8
   materialValido: {fileID: 2100000, guid: d632620d4d6fd8f43a67df201029104d, type: 2}
   materialInvalido: {fileID: 2100000, guid: b601d5d9920ee4f4a88a0990c6556002, type: 2}
-  layerAgua:
-    serializedVersion: 2
-    m_Bits: 16
-  alturaMaximaAgua: 1
-  fuerzaEmpujeAgua: 2
 --- !u!1 &2089210439068988812
 GameObject:
   m_ObjectHideFlags: 0
