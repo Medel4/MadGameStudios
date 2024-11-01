@@ -24,9 +24,15 @@ public class CogeryPoner : MonoBehaviour
     [SerializeField] private Material materialValido;
     [SerializeField] private Material materialInvalido;
 
-    private GameObject objetoRecogido; // Objeto que el jugador ha recogido
+    [Header("Restricción de Agua")]
+    [SerializeField] private LayerMask layerAgua; // Capa que representa el agua
+    [SerializeField] private float alturaMaximaAgua = 1.0f; // Altura máxima permitida en el agua
+    [SerializeField] private float fuerzaEmpujeAgua = 2.0f; // Fuerza de empuje en el agua
+
+    private GameObject objetoRecogido;
     private GameObject objetoPreview;
     private bool previsualizando = false;
+    private bool enAgua = false; // Verifica si el jugador está en el agua
 
     void Start()
     {
@@ -38,22 +44,17 @@ public class CogeryPoner : MonoBehaviour
     void Update()
     {
         CogerObjetos();
+        MovimientoJugador();
 
-        float h = Input.GetAxisRaw("Horizontal");
-        float v = Input.GetAxisRaw("Vertical");
-        Vector2 input = new Vector2(h, v).normalized;
-        transform.rotation = Quaternion.Euler(0, cam.transform.eulerAngles.y, 0);
-
-        if (input.sqrMagnitude > 0)
+        if (enAgua)
         {
-            float anguloRotacion = Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg + cam.transform.eulerAngles.y;
-            transform.eulerAngles = new Vector3(0, anguloRotacion, 0);
-            Vector3 movimiento = Quaternion.Euler(0, anguloRotacion, 0) * Vector3.forward;
-            cc.Move(movimiento * velocidadMovimiento * Time.deltaTime);
+            ProfundidadAgua();
         }
-
-        AplicarGravedad();
-        DeteccionSuelo();
+        else
+        {
+            AplicarGravedad();
+            DeteccionSuelo();
+        }
 
         if (Input.GetKeyDown(KeyCode.P) && objetoRecogido != null)
         {
@@ -72,6 +73,22 @@ public class CogeryPoner : MonoBehaviour
         if (previsualizando)
         {
             ColocarObjetos();
+        }
+    }
+
+    private void MovimientoJugador()
+    {
+        float h = Input.GetAxisRaw("Horizontal");
+        float v = Input.GetAxisRaw("Vertical");
+        Vector2 input = new Vector2(h, v).normalized;
+        transform.rotation = Quaternion.Euler(0, cam.transform.eulerAngles.y, 0);
+
+        if (input.sqrMagnitude > 0)
+        {
+            float anguloRotacion = Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg + cam.transform.eulerAngles.y;
+            transform.eulerAngles = new Vector3(0, anguloRotacion, 0);
+            Vector3 movimiento = Quaternion.Euler(0, anguloRotacion, 0) * Vector3.forward;
+            cc.Move(movimiento * velocidadMovimiento * Time.deltaTime);
         }
     }
 
@@ -117,7 +134,7 @@ public class CogeryPoner : MonoBehaviour
                 if (hit.collider.CompareTag("Destructible"))
                 {
                     objetoRecogido = hit.collider.gameObject;
-                    objetoRecogido.SetActive(false); // Ocultar el objeto en la escena
+                    objetoRecogido.SetActive(false);
                 }
             }
         }
@@ -139,7 +156,7 @@ public class CogeryPoner : MonoBehaviour
         if (objetoPreview != null)
         {
             Destroy(objetoPreview);
-            objetoPreview = null; // Aseguramos que se resetee
+            objetoPreview = null;
         }
     }
 
@@ -160,10 +177,10 @@ public class CogeryPoner : MonoBehaviour
                 if (Input.GetMouseButtonDown(0))
                 {
                     GameObject nuevoObjeto = Instantiate(objetoRecogido, objetoPreview.transform.position, objetoPreview.transform.rotation);
-                    nuevoObjeto.SetActive(true); // Activamos el objeto instanciado
-                    objetoRecogido = null; // Limpiamos el objeto recogido
-                    FinalizarPrevisualizacion(); // Finalizamos la previsualización después de colocar
-                    previsualizando = false; // Aseguramos que la previsualización se detiene
+                    nuevoObjeto.SetActive(true);
+                    objetoRecogido = null;
+                    FinalizarPrevisualizacion();
+                    previsualizando = false;
                 }
             }
             else
@@ -188,6 +205,39 @@ public class CogeryPoner : MonoBehaviour
         for (int i = 0; i < renderers.Length; i++)
         {
             renderers[i].material = material;
+        }
+    }
+
+    private void ProfundidadAgua()
+    {
+        if (transform.position.y < alturaMaximaAgua)
+        {
+            // Si el jugador está más allá de la altura permitida, aplica un empuje hacia arriba
+            MovimientoVertical.y = fuerzaEmpujeAgua;
+        }
+        else
+        {
+            // Mantiene la velocidad vertical en cero para evitar que la gravedad actúe mientras está en el agua
+            MovimientoVertical.y = 0;
+        }
+
+        cc.Move(MovimientoVertical * Time.deltaTime);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (((1 << other.gameObject.layer) & layerAgua) != 0)
+        {
+            enAgua = true;
+            MovimientoVertical.y = 0; // Restablecer la velocidad vertical al entrar en el agua
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (((1 << other.gameObject.layer) & layerAgua) != 0)
+        {
+            enAgua = false;
         }
     }
 
