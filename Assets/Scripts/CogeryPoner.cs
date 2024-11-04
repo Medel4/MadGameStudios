@@ -119,7 +119,7 @@ public class CogeryPoner : MonoBehaviour
                 if (hit.collider.CompareTag("Destructible"))
                 {
                     objetoRecogido = hit.collider.gameObject;
-                    objetoRecogido.SetActive(false); // Ocultar el objeto en la escena
+                    objetoRecogido.SetActive(false);
                 }
             }
         }
@@ -141,7 +141,7 @@ public class CogeryPoner : MonoBehaviour
         if (objetoPreview != null)
         {
             Destroy(objetoPreview);
-            objetoPreview = null; // Aseguramos que se resetee
+            objetoPreview = null;
         }
     }
 
@@ -162,10 +162,10 @@ public class CogeryPoner : MonoBehaviour
                 if (Input.GetMouseButtonDown(0))
                 {
                     GameObject nuevoObjeto = Instantiate(objetoRecogido, objetoPreview.transform.position, objetoPreview.transform.rotation);
-                    nuevoObjeto.SetActive(true); // Activamos el objeto instanciado
-                    objetoRecogido = null; // Limpiamos el objeto recogido
-                    FinalizarPrevisualizacion(); // Finalizamos la previsualización después de colocar
-                    previsualizando = false; // Aseguramos que la previsualización se detiene
+                    nuevoObjeto.SetActive(true);
+                    objetoRecogido = null;
+                    FinalizarPrevisualizacion();
+                    previsualizando = false;
                 }
             }
             else
