@@ -123,7 +123,7 @@ public class FirstPerson : MonoBehaviour
             }
         }
     }
-    //quiero hacer que el objeto que recojo con el cogerobjetos, sea el objeto que use para colocar
+    
 
 
 
