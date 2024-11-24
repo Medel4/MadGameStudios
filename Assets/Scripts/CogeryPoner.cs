@@ -10,13 +10,23 @@ public class CogeryPoner : MonoBehaviour
 
     [Header("Configuración Gravedad")]
     [SerializeField] private Vector3 MovimientoVertical;
-    [SerializeField] private float escalaGravedad;
+    [SerializeField] private float escalaGravedad = -9.81f;
     [SerializeField] private float alturaSalto = 3f;
     [SerializeField] private Transform Pies;
     [SerializeField] private float radioDeteccion = 0.3f;
     [SerializeField] private LayerMask queEsSuelo;
 
+    [Header("Configuración para Detección de Agua")]
+    [SerializeField] private LayerMask capaAgua;
+    [SerializeField] private float radioEsfera = 0.5f;
+    [SerializeField] private float distanciaEsfera = 1.5f;
+    [SerializeField] private float distanciaRaycast = 1.5f;
+    [SerializeField] private float alturaEsfera = 1.0f;
+
     [Header("Configuración para Colocación de Objetos")]
+    [SerializeField] private float distanciaInteraccion;
+    [SerializeField] private GameObject objetoOriginal;
+    [SerializeField] private GameObject objetoFinal;
     [SerializeField] private float distanciaMaxima = 5f;
     [SerializeField] private LayerMask layerInteractuable;
 
@@ -24,11 +34,9 @@ public class CogeryPoner : MonoBehaviour
     [SerializeField] private Material materialValido;
     [SerializeField] private Material materialInvalido;
 
-    private GameObject objetoRecogido; // Objeto que el jugador ha recogido
+    private GameObject objetoRecogido;
     private GameObject objetoPreview;
     private bool previsualizando = false;
-
-    public float EscalaGravedad { get => escalaGravedad; set => escalaGravedad = value; }
 
     void Start()
     {
@@ -44,6 +52,8 @@ public class CogeryPoner : MonoBehaviour
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
         Vector2 input = new Vector2(h, v).normalized;
+
+        // Rotación basada en la cámara original
         transform.rotation = Quaternion.Euler(0, cam.transform.eulerAngles.y, 0);
 
         if (input.sqrMagnitude > 0)
@@ -51,7 +61,12 @@ public class CogeryPoner : MonoBehaviour
             float anguloRotacion = Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg + cam.transform.eulerAngles.y;
             transform.eulerAngles = new Vector3(0, anguloRotacion, 0);
             Vector3 movimiento = Quaternion.Euler(0, anguloRotacion, 0) * Vector3.forward;
-            cc.Move(movimiento * velocidadMovimiento * Time.deltaTime);
+
+            // Detectar agua y falta de suelo para bloquear movimiento
+            if (!DetectarAguaYSinSuelo(movimiento))
+            {
+                cc.Move(movimiento * velocidadMovimiento * Time.deltaTime);
+            }
         }
 
         AplicarGravedad();
@@ -77,66 +92,95 @@ public class CogeryPoner : MonoBehaviour
         }
     }
 
-    private void AplicarGravedad()
+    private bool DetectarAguaYSinSuelo(Vector3 direccion)
     {
-        MovimientoVertical.y += escalaGravedad * Time.deltaTime;
-        cc.Move(MovimientoVertical * Time.deltaTime);
+        // Calcular la posición de la esfera basada en la dirección del movimiento y la altura
+        Vector3 posicionEsfera = transform.position + Vector3.up * alturaEsfera + direccion.normalized * distanciaEsfera;
+
+        // Verificar si la esfera está en contacto con agua
+        bool contactoConAgua = Physics.OverlapSphere(posicionEsfera, radioEsfera, capaAgua).Length > 0;
+
+        if (contactoConAgua)
+        {
+            // Raycast hacia abajo desde la posición de la esfera
+            if (!Physics.Raycast(posicionEsfera, Vector3.down, distanciaRaycast, queEsSuelo))
+            {
+                return true; // Bloquear movimiento
+            }
+        }
+
+        return false; // Permitir movimiento
     }
 
     private void DeteccionSuelo()
     {
+        // Detectar si el personaje está tocando el suelo
         Collider[] collsDetectados = Physics.OverlapSphere(Pies.position, radioDeteccion, queEsSuelo);
         if (collsDetectados.Length > 0)
         {
-            MovimientoVertical.y = 0;
+            MovimientoVertical.y = 0; // Reiniciar la velocidad vertical cuando estamos en el suelo
             Saltar();
         }
     }
 
     private void OnDrawGizmos()
     {
+        // Visualizar la esfera de detección de agua
+        Vector3 direccion = transform.forward; // Dirección del personaje
+        Vector3 posicionEsfera = transform.position + Vector3.up * alturaEsfera + direccion.normalized * distanciaEsfera;
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(posicionEsfera, radioEsfera);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawRay(posicionEsfera, Vector3.down * distanciaRaycast);
+
         Gizmos.color = Color.cyan;
-        Gizmos.DrawSphere(Pies.position, radioDeteccion);
+        Gizmos.DrawWireSphere(Pies.position, radioDeteccion);
     }
 
     private void Saltar()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) && Physics.CheckSphere(Pies.position, radioDeteccion, queEsSuelo))
         {
             MovimientoVertical.y = Mathf.Sqrt(-2 * escalaGravedad * alturaSalto);
         }
     }
 
-    void CogerObjetos()
+    private void CogerObjetos()
     {
         if (Input.GetKeyDown(KeyCode.E))
         {
-            RaycastHit hit;
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-
-            if (Physics.Raycast(ray, out hit, range))
+            if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit PointInfo, distanciaInteraccion))
             {
-                if (hit.collider.CompareTag("Destructible"))
+                if (PointInfo.transform.CompareTag("Destructible"))
                 {
-                    objetoRecogido = hit.collider.gameObject;
+                    objetoRecogido = PointInfo.collider.gameObject;
                     objetoRecogido.SetActive(false);
                 }
             }
         }
     }
 
-    void IniciarPrevisualizacion()
+    private void IniciarPrevisualizacion()
     {
         if (objetoRecogido != null)
         {
             objetoPreview = Instantiate(objetoRecogido);
             objetoPreview.SetActive(true);
 
+            // Desactivar el collider y el rigidbody para evitar empujones
+            Collider collider = objetoPreview.GetComponent<Collider>();
+            if (collider != null) collider.enabled = false;
+
+            Rigidbody rigidbody = objetoPreview.GetComponent<Rigidbody>();
+            if (rigidbody != null) rigidbody.isKinematic = true;
+
             CambiarMaterialPreview(materialInvalido);
         }
     }
 
-    void FinalizarPrevisualizacion()
+    private void FinalizarPrevisualizacion()
     {
         if (objetoPreview != null)
         {
@@ -145,22 +189,31 @@ public class CogeryPoner : MonoBehaviour
         }
     }
 
+    private void AplicarGravedad()
+    {
+        MovimientoVertical.y += escalaGravedad * Time.deltaTime;
+        cc.Move(MovimientoVertical * Time.deltaTime);
+    }
+
     void ColocarObjetos()
     {
-        RaycastHit hit;
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out hit, distanciaMaxima, layerInteractuable))
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit PointInfo, distanciaMaxima, layerInteractuable))
         {
-            objetoPreview.transform.position = hit.point;
-            objetoPreview.transform.rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+            objetoPreview.transform.position = PointInfo.point;
+            objetoPreview.transform.rotation = Quaternion.FromToRotation(Vector3.up, PointInfo.normal);
 
-            if (LugarEsValido(hit))
+            if (LugarEsValido(PointInfo) && !HayOverlapDestructible(PointInfo.point, objetoPreview))
             {
                 CambiarMaterialPreview(materialValido);
 
                 if (Input.GetMouseButtonDown(0))
                 {
+                    Collider collider = objetoPreview.GetComponent<Collider>();
+                    if (collider != null) collider.enabled = true;
+
+                    Rigidbody rigidbody = objetoPreview.GetComponent<Rigidbody>();
+                    if (rigidbody != null) rigidbody.isKinematic = false;
+
                     GameObject nuevoObjeto = Instantiate(objetoRecogido, objetoPreview.transform.position, objetoPreview.transform.rotation);
                     nuevoObjeto.SetActive(true);
                     objetoRecogido = null;
@@ -177,6 +230,24 @@ public class CogeryPoner : MonoBehaviour
         {
             CambiarMaterialPreview(materialInvalido);
         }
+    }
+
+    private bool HayOverlapDestructible(Vector3 posicion, GameObject objetoIgnorar)
+    {
+        float radioOverlap = 0.5f;
+        Collider[] objetosSolapados = Physics.OverlapSphere(posicion, radioOverlap);
+
+        foreach (Collider col in objetosSolapados)
+        {
+            if (col.gameObject == objetoIgnorar) continue;
+
+            if (col.CompareTag("Destructible"))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     bool LugarEsValido(RaycastHit hit)
