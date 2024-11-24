@@ -74,7 +74,7 @@ public class CogeryPoner : MonoBehaviour
         if (input.sqrMagnitude > 0)
         {
             float anguloRotacion = Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg + cam.transform.eulerAngles.y;
-            transform.eulerAngles = new Vector3(0, anguloRotacion, 0);
+           // transform.eulerAngles = new Vector3(0, anguloRotacion, 0);
             Vector3 movimiento = Quaternion.Euler(0, anguloRotacion, 0) * Vector3.forward;
 
             if (!DetectarAguaYSinSuelo(movimiento) || PuedeMoverseEnAgua(movimiento))
@@ -194,6 +194,7 @@ public class CogeryPoner : MonoBehaviour
                 {
                     objetoRecogido = PointInfo.collider.gameObject;
                     objetoRecogido.SetActive(false);
+                    
                 }
             }
         }
@@ -258,6 +259,7 @@ public class CogeryPoner : MonoBehaviour
 
                     GameObject nuevoObjeto = Instantiate(objetoRecogido, objetoPreview.transform.position, objetoPreview.transform.rotation);
                     nuevoObjeto.SetActive(true);
+                    Destroy(objetoRecogido, 5f);
                     objetoRecogido = null;
                     FinalizarPrevisualizacion();
                     previsualizando = false;
