@@ -3,7 +3,7 @@ using UnityEngine;
 public class CogeryPoner : MonoBehaviour
 {
     #region Configuración Extra Llamamiento
-    
+
     private CharacterController cc;
     private Camera cam;
     #endregion
@@ -47,10 +47,7 @@ public class CogeryPoner : MonoBehaviour
     [SerializeField] private Material materialValido;
     [SerializeField] private Material materialInvalido;
     private bool previsualizando = false;
-    
     #endregion
-
-
 
     void Start()
     {
@@ -74,7 +71,6 @@ public class CogeryPoner : MonoBehaviour
         if (input.sqrMagnitude > 0)
         {
             float anguloRotacion = Mathf.Atan2(input.x, input.y) * Mathf.Rad2Deg + cam.transform.eulerAngles.y;
-           // transform.eulerAngles = new Vector3(0, anguloRotacion, 0);
             Vector3 movimiento = Quaternion.Euler(0, anguloRotacion, 0) * Vector3.forward;
 
             if (!DetectarAguaYSinSuelo(movimiento) || PuedeMoverseEnAgua(movimiento))
@@ -138,8 +134,9 @@ public class CogeryPoner : MonoBehaviour
     private bool DetectarAguaYSinSuelo(Vector3 direccion)
     {
         bool contactoConAguaEsfera = DetectarAguaEsfera(direccion);
-        bool contactoConAguaCaja = DetectarAguaCaja();
+        bool contactoConAguaCaja = DetectarAguaCaja(direccion);
 
+        // Bloquear movimiento si cualquiera de las dos zonas detecta agua
         enAgua = contactoConAguaEsfera || contactoConAguaCaja;
 
         return enAgua;
@@ -151,28 +148,15 @@ public class CogeryPoner : MonoBehaviour
 
         bool contactoConAgua = Physics.OverlapSphere(posicionEsfera, radioEsfera, capaAgua).Length > 0;
 
-        if (contactoConAgua)
-        {
-            if (!Physics.Raycast(posicionEsfera, Vector3.down, distanciaRaycast, queEsSuelo))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return contactoConAgua;
     }
 
-    private bool DetectarAguaCaja()
+    private bool DetectarAguaCaja(Vector3 direccion)
     {
-        Vector3 centroCaja = transform.position + Vector3.up * alturaCintura;
-        Collider[] colisionadores = Physics.OverlapBox(centroCaja, tamanoCajaCintura / 2, Quaternion.identity, capaAgua);
+        Vector3 centroCaja = transform.position + Vector3.up * alturaCintura + direccion.normalized * distanciaEsfera;
+        bool contactoConAgua = Physics.OverlapBox(centroCaja, tamanoCajaCintura / 2, Quaternion.identity, capaAgua).Length > 0;
 
-        if (colisionadores.Length > 0)
-        {
-            return true;
-        }
-
-        return false;
+        return contactoConAgua;
     }
 
     private bool PuedeMoverseEnAgua(Vector3 direccion)
@@ -194,7 +178,6 @@ public class CogeryPoner : MonoBehaviour
                 {
                     objetoRecogido = PointInfo.collider.gameObject;
                     objetoRecogido.SetActive(false);
-                    
                 }
             }
         }
