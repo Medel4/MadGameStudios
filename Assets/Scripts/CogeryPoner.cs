@@ -3,7 +3,6 @@ using UnityEngine;
 public class CogeryPoner : MonoBehaviour
 {
     #region Configuración Extra Llamamiento
-
     private CharacterController cc;
     private Camera cam;
     #endregion
@@ -33,11 +32,11 @@ public class CogeryPoner : MonoBehaviour
 
     #region Configuración Colocación de Objetos
     [Header("Configuración para Colocación de Objetos")]
+    [SerializeField] private DatosSO datosPlayer; // ScriptableObject para gestionar los datos del inventario
     [SerializeField] private float distanciaInteraccion;
-    [SerializeField] private GameObject objetoOriginal;
-    [SerializeField] private GameObject objetoFinal;
     [SerializeField] private float distanciaMaxima = 5f;
     [SerializeField] private LayerMask layerInteractuable;
+    private int huecoSeleccionado = 0; // Hueco seleccionado en el inventario
     private GameObject objetoRecogido;
     private GameObject objetoPreview;
     #endregion
@@ -101,6 +100,7 @@ public class CogeryPoner : MonoBehaviour
         if (previsualizando)
         {
             ColocarObjetos();
+            
         }
     }
 
@@ -215,49 +215,51 @@ public class CogeryPoner : MonoBehaviour
         }
     }
 
-    private void ColocarObjetos()
-    {
-        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit PointInfo, distanciaMaxima, layerInteractuable))
-        {
-            objetoPreview.transform.position = PointInfo.point;
-            objetoPreview.transform.rotation = Quaternion.FromToRotation(Vector3.up, PointInfo.normal);
+     private void ColocarObjetos()
+     {
+         if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit PointInfo, distanciaMaxima, layerInteractuable))
+         {
+             objetoPreview.transform.position = PointInfo.point;
+             objetoPreview.transform.rotation = Quaternion.FromToRotation(Vector3.up, PointInfo.normal);
 
-            if (LugarEsValido(PointInfo) && !HayOverlapDestructible(PointInfo.point, objetoPreview))
-            {
-                CambiarMaterialPreview(materialValido);
+             if (LugarEsValido(PointInfo) && !HayOverlapDestructible(PointInfo.point, objetoPreview))
+             {
+                 CambiarMaterialPreview(materialValido);
 
-                if (Input.GetMouseButtonDown(0))
-                {
-                    Collider collider = objetoPreview.GetComponent<Collider>();
-                    if (collider != null)
-                    {
-                        collider.enabled = true;
-                    }
+                 if (Input.GetMouseButtonDown(0))
+                 {
+                     Collider collider = objetoPreview.GetComponent<Collider>();
+                     if (collider != null)
+                     {
+                         collider.enabled = true;
+                     }
 
-                    Rigidbody rigidbody = objetoPreview.GetComponent<Rigidbody>();
-                    if (rigidbody != null)
-                    {
-                        rigidbody.isKinematic = false;
-                    }
+                     Rigidbody rigidbody = objetoPreview.GetComponent<Rigidbody>();
+                     if (rigidbody != null)
+                     {
+                         rigidbody.isKinematic = false;
+                     }
 
-                    GameObject nuevoObjeto = Instantiate(objetoRecogido, objetoPreview.transform.position, objetoPreview.transform.rotation);
-                    nuevoObjeto.SetActive(true);
-                    Destroy(objetoRecogido, 5f);
-                    objetoRecogido = null;
-                    FinalizarPrevisualizacion();
-                    previsualizando = false;
-                }
-            }
-            else
-            {
-                CambiarMaterialPreview(materialInvalido);
-            }
-        }
-        else
-        {
-            CambiarMaterialPreview(materialInvalido);
-        }
-    }
+                     GameObject nuevoObjeto = Instantiate(objetoRecogido, objetoPreview.transform.position, objetoPreview.transform.rotation);
+                     nuevoObjeto.SetActive(true);
+                     Destroy(objetoRecogido, 5f);
+                     objetoRecogido = null;
+                     FinalizarPrevisualizacion();
+                     previsualizando = false;
+                 }
+             }
+             else
+             {
+                 CambiarMaterialPreview(materialInvalido);
+             }
+         }
+         else
+         {
+             CambiarMaterialPreview(materialInvalido);
+         }
+     }
+    
+
 
     private bool HayOverlapDestructible(Vector3 posicion, GameObject objetoIgnorar)
     {

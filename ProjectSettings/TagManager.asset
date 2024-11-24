@@ -6,6 +6,10 @@ TagManager:
   tags:
   - Destructible
   - Interactuables
+  - Maceta
+  - Cubo
+  - Capsula
+  - Pelota
   layers:
   - Default
   - TransparentFX

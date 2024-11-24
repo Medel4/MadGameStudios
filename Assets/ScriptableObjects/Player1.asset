@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d849e64408da114eba7e3d0c5bac19b, type: 3}
+  m_Name: Player1
+  m_EditorClassIdentifier: 
+  macetas: 0
+  objetoMacetas: {fileID: 5232578808246198634, guid: f7732adfb42a92f428cd1959f000f302,
+    type: 3}
+  pelotas: 0
+  objetoPelotas: {fileID: 1241333720803939644, guid: f390ea04badeb62469c125da51b45c1c,
+    type: 3}
+  cuadrados: 0
+  objetoCuadrados: {fileID: 3543681014933205341, guid: ddbe5f4188db55e41b933fc1389415ed,
+    type: 3}
+  capsulas: 0
+  objetoCapsula: {fileID: 3428963068153339628, guid: 23d63e24cbfc6a64ab8f42574ef31662,
+    type: 3}
+  objetosEnInventario: 00000000000000000000000000000000
+  huecosEnInventario: 0
+  cantidadApilable: 0
+  distanciaInteraccion: 0
+  espacioinventario: 0
+  distanciaMaxima: 0
