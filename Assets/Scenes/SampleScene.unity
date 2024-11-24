@@ -220,26 +220,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7097ba7ba649e1f41bba232312bdcbd8, type: 3}
---- !u!1 &71508863 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5232578808246198634, guid: f7732adfb42a92f428cd1959f000f302,
-    type: 3}
-  m_PrefabInstance: {fileID: 599231161}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &71508868
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 71508863}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42611d139a220b04db647ae8b9747ffc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  plantaMaceta: []
-  vida: 0
 --- !u!1001 &176784432
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -492,11 +472,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5232578808246198634, guid: f7732adfb42a92f428cd1959f000f302,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 71508868}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f7732adfb42a92f428cd1959f000f302, type: 3}
 --- !u!1 &743736247
 GameObject:
@@ -1765,7 +1741,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   velocidadMovimiento: 5
-  range: 5
   MovimientoVertical: {x: 0, y: 0, z: 0}
   escalaGravedad: -9.81
   alturaSalto: 3
@@ -1776,12 +1751,14 @@ MonoBehaviour:
     m_Bits: 8
   capaAgua:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 16
   radioEsfera: 0.5
   distanciaEsfera: 1.5
-  distanciaRaycast: 1.2
   alturaEsfera: 0.76
-  distanciaInteraccion: 0
+  distanciaRaycast: 1.2
+  tamanoCajaCintura: {x: 1, y: 0.17, z: 0.58}
+  alturaCintura: 1.12
+  distanciaInteraccion: 2
   objetoOriginal: {fileID: 0}
   objetoFinal: {fileID: 0}
   distanciaMaxima: 5

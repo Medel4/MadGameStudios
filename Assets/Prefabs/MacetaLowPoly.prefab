@@ -427,6 +427,7 @@ GameObject:
   - component: {fileID: 2394383137432417924}
   - component: {fileID: 4910841192402298060}
   - component: {fileID: 8439837241787909299}
+  - component: {fileID: 1148978471806654038}
   m_Layer: 0
   m_Name: MacetaLowPoly
   m_TagString: Destructible
@@ -464,7 +465,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   outlineMode: 0
   outlineColor: {r: 0, g: 1, b: 0.10661459, a: 1}
-  outlineWidth: 4
+  outlineWidth: 5
   precomputeOutline: 1
   bakeKeys:
   - {fileID: -2128599272216676504, guid: 4ab9cdaa293952645a19476ab41539ad, type: 3}
@@ -1975,6 +1976,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.68204117, y: 0.7001419, z: 1}
   m_Center: {x: -0.0021190643, y: 0.34609222, z: 0}
+--- !u!114 &1148978471806654038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5232578808246198634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42611d139a220b04db647ae8b9747ffc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  plantaMaceta: []
+  vida: 10
 --- !u!1 &5370215174246036730
 GameObject:
   m_ObjectHideFlags: 0
