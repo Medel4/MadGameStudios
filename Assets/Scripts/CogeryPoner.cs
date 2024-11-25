@@ -32,11 +32,10 @@ public class CogeryPoner : MonoBehaviour
 
     #region Configuración Colocación de Objetos
     [Header("Configuración para Colocación de Objetos")]
-    [SerializeField] private DatosSO datosPlayer; // ScriptableObject para gestionar los datos del inventario
+    [SerializeField] private DatosSO datosPlayer;
     [SerializeField] private float distanciaInteraccion;
     [SerializeField] private float distanciaMaxima = 5f;
     [SerializeField] private LayerMask layerInteractuable;
-    private int huecoSeleccionado = 0; // Hueco seleccionado en el inventario
     private GameObject objetoRecogido;
     private GameObject objetoPreview;
     #endregion
@@ -46,6 +45,8 @@ public class CogeryPoner : MonoBehaviour
     [SerializeField] private Material materialValido;
     [SerializeField] private Material materialInvalido;
     private bool previsualizando = false;
+    [SerializeField] private Transform posicionMano;
+    private GameObject miniPreview;
     #endregion
 
     void Start()
@@ -57,10 +58,8 @@ public class CogeryPoner : MonoBehaviour
 
     void Update()
     {
-        // Detección de objetos recogibles
         CogerObjetos();
 
-        // Movimiento del jugador
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
         Vector2 input = new Vector2(h, v).normalized;
@@ -78,11 +77,9 @@ public class CogeryPoner : MonoBehaviour
             }
         }
 
-        // Aplicar gravedad y detectar suelo
         AplicarGravedad();
         DeteccionSuelo();
 
-        // Previsualización y colocación de objetos
         if (Input.GetKeyDown(KeyCode.P) && objetoRecogido != null)
         {
             previsualizando = !previsualizando;
@@ -100,7 +97,6 @@ public class CogeryPoner : MonoBehaviour
         if (previsualizando)
         {
             ColocarObjetos();
-            
         }
     }
 
@@ -136,7 +132,6 @@ public class CogeryPoner : MonoBehaviour
         bool contactoConAguaEsfera = DetectarAguaEsfera(direccion);
         bool contactoConAguaCaja = DetectarAguaCaja(direccion);
 
-        // Bloquear movimiento si cualquiera de las dos zonas detecta agua
         enAgua = contactoConAguaEsfera || contactoConAguaCaja;
 
         return enAgua;
@@ -203,6 +198,37 @@ public class CogeryPoner : MonoBehaviour
             }
 
             CambiarMaterialPreview(materialInvalido);
+
+            miniPreview = Instantiate(objetoRecogido, posicionMano.position, posicionMano.rotation);
+            miniPreview.SetActive(true);
+
+            miniPreview.transform.localScale = Vector3.one * 0.05f;
+
+            miniPreview.transform.SetParent(posicionMano);
+
+            Collider miniCollider = miniPreview.GetComponent<Collider>();
+            if (miniCollider != null)
+            {
+                miniCollider.enabled = false;
+            }
+
+            Rigidbody miniRigidbody = miniPreview.GetComponent<Rigidbody>();
+            if (miniRigidbody != null)
+            {
+                miniRigidbody.isKinematic = true;
+            }
+        }
+    }
+
+    private void CambiarMaterialPreview(Material material)
+    {
+        if (objetoPreview != null)
+        {
+            Renderer[] renderers = objetoPreview.GetComponentsInChildren<Renderer>();
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                renderers[i].material = material;
+            }
         }
     }
 
@@ -213,53 +239,57 @@ public class CogeryPoner : MonoBehaviour
             Destroy(objetoPreview);
             objetoPreview = null;
         }
+
+        if (miniPreview != null)
+        {
+            Destroy(miniPreview);
+            miniPreview = null;
+        }
     }
 
-     private void ColocarObjetos()
-     {
-         if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit PointInfo, distanciaMaxima, layerInteractuable))
-         {
-             objetoPreview.transform.position = PointInfo.point;
-             objetoPreview.transform.rotation = Quaternion.FromToRotation(Vector3.up, PointInfo.normal);
+    private void ColocarObjetos()
+    {
+        if (Physics.Raycast(cam.transform.position, cam.transform.forward, out RaycastHit PointInfo, distanciaMaxima, layerInteractuable))
+        {
+            objetoPreview.transform.position = PointInfo.point;
+            objetoPreview.transform.rotation = Quaternion.FromToRotation(Vector3.up, PointInfo.normal);
 
-             if (LugarEsValido(PointInfo) && !HayOverlapDestructible(PointInfo.point, objetoPreview))
-             {
-                 CambiarMaterialPreview(materialValido);
+            if (LugarEsValido(PointInfo) && !HayOverlapDestructible(PointInfo.point, objetoPreview))
+            {
+                CambiarMaterialPreview(materialValido);
 
-                 if (Input.GetMouseButtonDown(0))
-                 {
-                     Collider collider = objetoPreview.GetComponent<Collider>();
-                     if (collider != null)
-                     {
-                         collider.enabled = true;
-                     }
+                if (Input.GetMouseButtonDown(0))
+                {
+                    Collider collider = objetoPreview.GetComponent<Collider>();
+                    if (collider != null)
+                    {
+                        collider.enabled = true;
+                    }
 
-                     Rigidbody rigidbody = objetoPreview.GetComponent<Rigidbody>();
-                     if (rigidbody != null)
-                     {
-                         rigidbody.isKinematic = false;
-                     }
+                    Rigidbody rigidbody = objetoPreview.GetComponent<Rigidbody>();
+                    if (rigidbody != null)
+                    {
+                        rigidbody.isKinematic = false;
+                    }
 
-                     GameObject nuevoObjeto = Instantiate(objetoRecogido, objetoPreview.transform.position, objetoPreview.transform.rotation);
-                     nuevoObjeto.SetActive(true);
-                     Destroy(objetoRecogido, 5f);
-                     objetoRecogido = null;
-                     FinalizarPrevisualizacion();
-                     previsualizando = false;
-                 }
-             }
-             else
-             {
-                 CambiarMaterialPreview(materialInvalido);
-             }
-         }
-         else
-         {
-             CambiarMaterialPreview(materialInvalido);
-         }
-     }
-    
-
+                    GameObject nuevoObjeto = Instantiate(objetoRecogido, objetoPreview.transform.position, objetoPreview.transform.rotation);
+                    nuevoObjeto.SetActive(true);
+                    Destroy(objetoRecogido, 5f);
+                    objetoRecogido = null;
+                    FinalizarPrevisualizacion();
+                    previsualizando = false;
+                }
+            }
+            else
+            {
+                CambiarMaterialPreview(materialInvalido);
+            }
+        }
+        else
+        {
+            CambiarMaterialPreview(materialInvalido);
+        }
+    }
 
     private bool HayOverlapDestructible(Vector3 posicion, GameObject objetoIgnorar)
     {
@@ -290,15 +320,6 @@ public class CogeryPoner : MonoBehaviour
         }
 
         return false;
-    }
-
-    private void CambiarMaterialPreview(Material material)
-    {
-        Renderer[] renderers = objetoPreview.GetComponentsInChildren<Renderer>();
-        for (int i = 0; i < renderers.Length; i++)
-        {
-            renderers[i].material = material;
-        }
     }
     #endregion
 
