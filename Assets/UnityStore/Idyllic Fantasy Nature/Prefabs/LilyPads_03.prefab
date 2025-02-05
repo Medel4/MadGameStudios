@@ -25,13 +25,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2687876934397375365}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4131797673540345160}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1483286970853948819
 MeshFilter:
@@ -93,6 +93,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4131797673540345160}
   - component: {fileID: 9154982132771646009}
+  - component: {fileID: 1854636345081986205}
   m_Layer: 0
   m_Name: LilyPads_03
   m_TagString: Untagged
@@ -107,6 +108,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3610981708298979314}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -115,7 +117,6 @@ Transform:
   - {fileID: 2732207777406904178}
   - {fileID: 706784382241922371}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!205 &9154982132771646009
 LODGroup:
@@ -140,6 +141,20 @@ LODGroup:
     renderers:
     - renderer: {fileID: 6006368484865362457}
   m_Enabled: 1
+--- !u!114 &1854636345081986205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3610981708298979314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d54868cb93bb20d4daad16cef6751d9c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tamanomaximo: 1
+  tamanoinicial: 0.00001
 --- !u!1 &4641085501954420150
 GameObject:
   m_ObjectHideFlags: 0
@@ -165,13 +180,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4641085501954420150}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4131797673540345160}
-  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1818365165768631877
 MeshFilter:

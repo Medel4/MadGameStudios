@@ -10,6 +10,8 @@ TagManager:
   - Cubo
   - Capsula
   - Pelota
+  - volagua
+  - aire
   layers:
   - Default
   - TransparentFX
@@ -17,7 +19,7 @@ TagManager:
   - layerInteraccion
   - Water
   - UI
-  - 
+  - Player
   - 
   - 
   - 
