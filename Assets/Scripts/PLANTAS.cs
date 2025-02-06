@@ -5,7 +5,7 @@ using UnityEngine;
 public class PLANTAS : MonoBehaviour
 {
 
-    [SerializeField]private float tamanomaximo=1f;
+    [SerializeField]private float tamanomaximo=1.6f;
     private float tamanoactual;
     [SerializeField]private float tamanoinicial= 0.00001f;
     private float velocidadCrecimiento;
@@ -13,9 +13,9 @@ public class PLANTAS : MonoBehaviour
     // Start is called before the first frame update
     private void Awake()
     {
-        tamanomaximo = 1f;
+        tamanomaximo = 1.6f;
         velocidadCrecimiento = 1.4F * Time.deltaTime;
-        tamanoinicial = 0.0001f;
+        tamanoinicial = 0.001f;
         transform.localScale = new Vector3(0.000001f, 0.000001f, 0.000001f);
     }
 
@@ -39,11 +39,11 @@ public class PLANTAS : MonoBehaviour
         if (other.CompareTag("aire"))
         {
             funcionar = true;
-            Debug.Log("puta");
+           
         }
         else if (other.CompareTag("volagua"))
         {
-            Debug.Log("1puta");
+         
             funcionar = false;
         }
          
