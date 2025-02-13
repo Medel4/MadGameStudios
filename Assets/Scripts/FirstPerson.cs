@@ -49,6 +49,13 @@ public class FirstPerson : MonoBehaviour
     private GameObject miniPreview;
     #endregion
 
+    #region Configuración de Interacción
+
+    [Header("Configuración de Interacción")]
+    [SerializeField] private float distanciaInteraccionPlantas = 2f; // Distancia para interactuar
+    [SerializeField] private int maderaActual = 0;
+    #endregion
+
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -346,6 +353,31 @@ public class FirstPerson : MonoBehaviour
     private void OnDestroy()
     {
         FinalizarPrevisualizacion();
+    }
+    #endregion
+    #region Plantas
+    private void InteractuarConPlanta()
+    {
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition); // Crear el raycast desde la cámara
+        if (Physics.Raycast(ray, out RaycastHit hit, distanciaInteraccionPlantas))
+        {
+            if (hit.transform.CompareTag("Planta") && hit.transform.TryGetComponent(out PLANTAS planta))
+            {
+                if (planta.PuedeSerCortada()) // Verificar si la planta ha crecido completamente
+                {
+                    // Sumar madera
+                    maderaActual++;
+                    Debug.Log("Madera recogida. Total madera: " + maderaActual);
+
+                    // Llamar al método para "cortar" la planta
+                    planta.CortarPlanta();
+                }
+                else
+                {
+                    Debug.Log("La planta aún no está completamente crecida.");
+                }
+            }
+        }
     }
     #endregion
 }

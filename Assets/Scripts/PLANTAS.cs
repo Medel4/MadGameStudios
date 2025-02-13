@@ -1,52 +1,80 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PLANTAS : MonoBehaviour
+public class PLANTAS : MonoBehaviour, IInteractuable
 {
+    [SerializeField] private float tamanomaximo = 1.6f; // Tamaño máximo de la planta
+    private float tamanoactual; // Tamaño actual de la planta
+    [SerializeField] private float tamanoinicial = 0.00001f; // Tamaño inicial de la planta
+    private float velocidadCrecimiento; // Velocidad de crecimiento de la planta
+    [SerializeField] private bool funcionar = false; // Determina si la planta está creciendo
 
-    [SerializeField]private float tamanomaximo=1.6f;
-    private float tamanoactual;
-    [SerializeField]private float tamanoinicial= 0.00001f;
-    private float velocidadCrecimiento;
-    [SerializeField] private bool funcionar=false;
-    // Start is called before the first frame update
+    [SerializeField] private GameObject plantaCortadaPrefab; // Prefab para la planta cortada
+    [SerializeField] private float tiempoAntesDeDesaparecer = 1f; // Tiempo antes de que desaparezca la planta después de ser cortada
+
     private void Awake()
     {
         tamanomaximo = 1.6f;
-        velocidadCrecimiento = 1.4F * Time.deltaTime;
-        tamanoinicial = 0.001f;
+        velocidadCrecimiento = 1.4f * Time.deltaTime;
+        tamanoinicial = 0.0001f;
         transform.localScale = new Vector3(0.000001f, 0.000001f, 0.000001f);
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
-
-         if (funcionar==true)
+        if (funcionar)
         {
             tamanoactual = transform.localScale.magnitude;
             if (tamanoactual < tamanomaximo)
             {
                 transform.localScale += new Vector3(tamanoinicial, tamanoinicial, tamanoinicial) * velocidadCrecimiento;
-
             }
         }
     }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("aire"))
         {
             funcionar = true;
-           
         }
         else if (other.CompareTag("volagua"))
         {
-         
             funcionar = false;
         }
-         
     }
 
+    // Método para cortar la planta
+    public bool PuedeSerCortada()
+    {
+        return transform.localScale.magnitude >= tamanomaximo; // La planta puede ser cortada si ha alcanzado su tamaño máximo
+    }
+
+    public void CortarPlanta()
+    {
+        // Si la planta puede ser cortada, destruye la planta y genera efectos
+        if (PuedeSerCortada())
+        {
+            // Instanciar el prefab de la planta cortada (si existe)
+            if (plantaCortadaPrefab != null)
+            {
+                Instantiate(plantaCortadaPrefab, transform.position, transform.rotation);
+            }
+
+            // Destruir la planta original
+            Destroy(gameObject);
+
+            // Aquí puedes añadir efectos adicionales, como aumentar el inventario del jugador con madera
+            Debug.Log("Planta cortada y madera recolectada.");
+        }
+    }
+
+    // Implementar la interfaz IInteractuable
+    public void Interactuar(Transform interactuador)
+    {
+        // Solo se puede cortar si la planta está lista
+        if (PuedeSerCortada())
+        {
+            CortarPlanta(); // Cortar la planta al interactuar con ella
+        }
+    }
 }
