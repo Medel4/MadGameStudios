@@ -10,10 +10,10 @@ public class PLANTAS : MonoBehaviour, IInteractuable
 
     [SerializeField] private GameObject plantaCortadaPrefab; // Prefab para la planta cortada
     [SerializeField] private float tiempoAntesDeDesaparecer = 1f; // Tiempo antes de que desaparezca la planta después de ser cortada
-
+    [SerializeField] private FirstPerson fp; 
     private void Awake()
     {
-        tamanomaximo = 1.6f;
+        tamanomaximo = 1f;
         velocidadCrecimiento = 1.4f * Time.deltaTime;
         tamanoinicial = 0.0001f;
         transform.localScale = new Vector3(0.000001f, 0.000001f, 0.000001f);
@@ -54,14 +54,10 @@ public class PLANTAS : MonoBehaviour, IInteractuable
         // Si la planta puede ser cortada, destruye la planta y genera efectos
         if (PuedeSerCortada())
         {
-            // Instanciar el prefab de la planta cortada (si existe)
-            if (plantaCortadaPrefab != null)
-            {
-                Instantiate(plantaCortadaPrefab, transform.position, transform.rotation);
-            }
+            fp.MaderaActual += 5;
 
             // Destruir la planta original
-            Destroy(gameObject);
+            Destroy(gameObject,tiempoAntesDeDesaparecer);
 
             // Aquí puedes añadir efectos adicionales, como aumentar el inventario del jugador con madera
             Debug.Log("Planta cortada y madera recolectada.");

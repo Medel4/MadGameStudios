@@ -54,6 +54,8 @@ public class FirstPerson : MonoBehaviour
     [Header("Configuración de Interacción")]
     [SerializeField] private float distanciaInteraccionPlantas = 2f; // Distancia para interactuar
     [SerializeField] private int maderaActual = 0;
+
+    public int MaderaActual { get => maderaActual; set => maderaActual = value; }
     #endregion
 
     void Start()
